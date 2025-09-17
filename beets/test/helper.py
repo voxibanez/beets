@@ -538,7 +538,7 @@ class PluginMixin(TestHelper):
                 self.unload_plugins()
     """
 
-    plugin: ClassVar[str] | None = None
+    plugin: ClassVar[str | None] = None
     plugin_type: ClassVar[type[beets.plugins.BeetsPlugin] | None] = None
     preload_plugin: ClassVar[bool] = True
 
@@ -586,6 +586,9 @@ class PluginMixin(TestHelper):
     def unregister_plugin(self, name: str | None = None) -> None:
         """Unregister a plugin class in the `beetsplug` namespace."""
         name = name or self.plugin
+        if not name:
+            return
+
         full_namespace = f"{PLUGIN_NAMESPACE}.{name}"
 
         if full_namespace in sys.modules:
@@ -656,7 +659,8 @@ class PluginMixin(TestHelper):
         self.config[self.plugin].set(config)
         if self.plugin_type is not None:
             self.register_plugin(self.plugin_type, self.plugin)
-        self.load_plugins(self.plugin)
+        if self.plugin:
+            self.load_plugins(self.plugin)
 
         yield
 

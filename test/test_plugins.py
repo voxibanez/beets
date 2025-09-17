@@ -119,7 +119,9 @@ class TestPluginListeners(PluginTestCase, ImportHelper):
         def on_cli_exit(self, **kwargs):
             self.records.append(("cli_exit", kwargs))
 
-        def on_write(self, item=None, path=None, tags: dict | None = None):
+        def on_write(
+            self, item=None, path=None, tags: dict[Any, Any] | None = None
+        ):
             self.records.append(("write", item, path, tags))
             if tags and tags["artist"] == "XXX":
                 tags["artist"] = "YYY"
