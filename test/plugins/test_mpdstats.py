@@ -17,11 +17,11 @@ from unittest.mock import ANY, Mock, call, patch
 
 from beets import util
 from beets.library import Item
-from beets.test.helper import PluginTestCase
+from beets.test.helper import PluginUnitTestCase
 from beetsplug.mpdstats import MPDStats
 
 
-class MPDStatsTest(PluginTestCase):
+class MPDStatsTest(PluginUnitTestCase):
     plugin = "mpdstats"
 
     def test_update_rating(self):

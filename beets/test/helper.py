@@ -676,7 +676,7 @@ def get_available_plugins():
     ]
 
 
-class PluginTestCasePytest(PluginMixin, TestHelper):
+class PluginTestCase(PluginMixin, TestHelper):
     @pytest.fixture(autouse=True)
     def _setup_teardown(self):
         self.setup_beets()
@@ -684,8 +684,8 @@ class PluginTestCasePytest(PluginMixin, TestHelper):
         self.teardown_beets()
 
 
-class PluginTestCase(PluginMixin, BeetsTestCase):
-    """DEPRECATED: Use PluginTestCasePytest instead for new code!"""
+class PluginUnitTestCase(PluginMixin, BeetsTestCase):
+    """DEPRECATED: Use PluginTestCase instead for new code using pytest!"""
 
     pass
 

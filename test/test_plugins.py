@@ -35,13 +35,12 @@ from beets.test.helper import (
     ImportHelper,
     PluginMixin,
     PluginTestCase,
-    PluginTestCasePytest,
     TerminalImportMixin,
 )
 from beets.util import syspath
 
 
-class TestPluginRegistration(PluginTestCasePytest):
+class TestPluginRegistration(PluginTestCase):
     """Ensure that we can dynamically add a plugin without creating
     actual files on disk.
 
@@ -103,7 +102,7 @@ class TestPluginRegistration(PluginTestCasePytest):
             Album._types
 
 
-class TestPluginListeners(PluginTestCasePytest, ImportHelper):
+class TestPluginListeners(PluginTestCase, ImportHelper):
     """Test that plugin listeners are registered and called correctly."""
 
     class DummyPlugin(plugins.BeetsPlugin):
@@ -246,19 +245,18 @@ class TestPluginListenersParams(PluginMixin):
                 plugins.send("exit_cli", foo=5)
 
 
-class PluginImportTestCase(ImportHelper, PluginTestCase):
+class PromptChoicesTest(TerminalImportMixin, ImportHelper, PluginMixin):
+    @pytest.fixture(autouse=True)
+    def setup_teardown(self):
+        # Run old unitest setup/teardown methods
+        self.setUp()
+        yield
+        self.tearDown()
+
     def setUp(self):
         super().setUp()
         self.prepare_album_for_import(2)
 
-
-class PromptChoicesTest(TerminalImportMixin, PluginImportTestCase):
-    """
-    FIXME: This test is quite messy and could use some cleanup.
-    """
-
-    def setUp(self):
-        super().setUp()
         self.setup_importer()
         self.matcher = AutotagStub(AutotagStub.IDENT).install()
         self.addCleanup(self.matcher.restore)
