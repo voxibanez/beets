@@ -859,12 +859,9 @@ class MusicBrainzPlugin(MetadataSourcePlugin):
         MusicBrainzAPIError.
         """
         self._log.debug("Requesting MusicBrainz release {}", album_id)
-        if not (albumid := self._extract_id(album_id)):
-            self._log.debug("Invalid MBID ({}).", album_id)
-            return None
 
         try:
-            res = musicbrainzngs.get_release_by_id(albumid, RELEASE_INCLUDES)
+            res = musicbrainzngs.get_release_by_id(album_id, RELEASE_INCLUDES)
 
             # resolve linked release relations
             actual_res = None
@@ -877,7 +874,7 @@ class MusicBrainzPlugin(MetadataSourcePlugin):
             return None
         except musicbrainzngs.MusicBrainzError as exc:
             raise MusicBrainzAPIError(
-                exc, "get release by ID", albumid, traceback.format_exc()
+                exc, "get release by ID", album_id, traceback.format_exc()
             )
 
         # release is potentially a pseudo release
@@ -896,17 +893,13 @@ class MusicBrainzPlugin(MetadataSourcePlugin):
         """Fetches a track by its MusicBrainz ID. Returns a TrackInfo object
         or None if no track is found. May raise a MusicBrainzAPIError.
         """
-        if not (trackid := self._extract_id(track_id)):
-            self._log.debug("Invalid MBID ({}).", track_id)
-            return None
-
         try:
-            res = musicbrainzngs.get_recording_by_id(trackid, TRACK_INCLUDES)
+            res = musicbrainzngs.get_recording_by_id(track_id, TRACK_INCLUDES)
         except musicbrainzngs.ResponseError:
             self._log.debug("Track ID match failed.")
             return None
         except musicbrainzngs.MusicBrainzError as exc:
             raise MusicBrainzAPIError(
-                exc, "get recording by ID", trackid, traceback.format_exc()
+                exc, "get recording by ID", track_id, traceback.format_exc()
             )
         return self.track_info(res["recording"])

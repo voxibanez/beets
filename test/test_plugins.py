@@ -541,5 +541,4 @@ class TestDeprecationCopy:
         assert hasattr(LegacyMetadataPlugin, "albums_for_ids")
         assert hasattr(LegacyMetadataPlugin, "tracks_for_ids")
         assert hasattr(LegacyMetadataPlugin, "data_source_mismatch_penalty")
-        assert hasattr(LegacyMetadataPlugin, "_extract_id")
         assert hasattr(LegacyMetadataPlugin, "get_artist")

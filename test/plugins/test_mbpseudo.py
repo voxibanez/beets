@@ -107,23 +107,6 @@ class TestMBPseudoPlugin(PluginMixin):
     ):
         assert mbpseudo_plugin._scripts == ["Latn", "Dummy"]
 
-    @pytest.mark.parametrize(
-        "album_id",
-        [
-            "a5ce1d11-2e32-45a4-b37f-c1589d46b103",
-            "-5ce1d11-2e32-45a4-b37f-c1589d46b103",
-        ],
-    )
-    def test_extract_id_uses_music_brainz_pattern(
-        self,
-        mbpseudo_plugin: MusicBrainzPseudoReleasePlugin,
-        album_id: str,
-    ):
-        if album_id.startswith("-"):
-            assert mbpseudo_plugin._extract_id(album_id) is None
-        else:
-            assert mbpseudo_plugin._extract_id(album_id) == album_id
-
     def test_album_info_for_pseudo_release(
         self,
         mbpseudo_plugin: MusicBrainzPseudoReleasePlugin,

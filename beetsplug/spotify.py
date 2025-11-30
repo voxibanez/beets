@@ -312,12 +312,7 @@ class SpotifyPlugin(
         :rtype: beets.autotag.hooks.AlbumInfo or None
 
         """
-        if not (spotify_id := self._extract_id(album_id)):
-            return None
-
-        album_data = self._handle_response(
-            "get", f"{self.album_url}{spotify_id}"
-        )
+        album_data = self._handle_response("get", f"{self.album_url}{album_id}")
         if album_data["name"] == "":
             self._log.debug("Album removed from Spotify: {}", album_id)
             return None
@@ -361,8 +356,8 @@ class SpotifyPlugin(
 
         return AlbumInfo(
             album=album_data["name"],
-            album_id=spotify_id,
-            spotify_album_id=spotify_id,
+            album_id=album_id,
+            spotify_album_id=album_id,
             artist=artist,
             artist_id=artist_id,
             spotify_artist_id=artist_id,
@@ -418,13 +413,9 @@ class SpotifyPlugin(
 
         """
 
-        if not (spotify_id := self._extract_id(track_id)):
-            self._log.debug("Invalid Spotify ID: {}", track_id)
-            return None
-
         if not (
             track_data := self._handle_response(
-                "get", f"{self.track_url}{spotify_id}"
+                "get", f"{self.track_url}{track_id}"
             )
         ):
             self._log.debug("Track not found: {}", track_id)

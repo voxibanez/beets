@@ -30,7 +30,6 @@ from beets.autotag.distance import Distance, distance
 from beets.autotag.hooks import AlbumInfo
 from beets.autotag.match import assign_items
 from beets.plugins import find_plugins
-from beets.util.id_extractors import extract_release_id
 from beetsplug.musicbrainz import (
     RELEASE_INCLUDES,
     MusicBrainzAPIError,
@@ -144,7 +143,7 @@ class MusicBrainzPseudoReleasePlugin(MusicBrainzPlugin):
         if release.get("status") == _STATUS_PSEUDO:
             return official_release
         elif pseudo_release_ids := self._intercept_mb_release(release):
-            album_id = self._extract_id(pseudo_release_ids[0])
+            album_id = pseudo_release_ids[0]
             try:
                 raw_pseudo_release = self._release_getter(
                     album_id, RELEASE_INCLUDES
@@ -286,10 +285,6 @@ class MusicBrainzPseudoReleasePlugin(MusicBrainzPlugin):
 
         if album_info.data_source == self.data_source:
             album_info.data_source = "MusicBrainz"
-
-    @override
-    def _extract_id(self, url: str) -> str | None:
-        return extract_release_id("MusicBrainz", url)
 
 
 class PseudoAlbumInfo(AlbumInfo):

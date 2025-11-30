@@ -70,10 +70,7 @@ class DeezerPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
 
     def album_for_id(self, album_id: str) -> AlbumInfo | None:
         """Fetch an album by its Deezer ID or URL."""
-        if not (deezer_id := self._extract_id(album_id)):
-            return None
-
-        album_url = f"{self.album_url}{deezer_id}"
+        album_url = f"{self.album_url}{album_id}"
         if not (album_data := self.fetch_data(album_url)):
             return None
 
@@ -101,13 +98,13 @@ class DeezerPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
                 f"Invalid `release_date` returned by {self.data_source} API: "
                 f"{release_date!r}"
             )
-        tracks_obj = self.fetch_data(f"{self.album_url}{deezer_id}/tracks")
+        tracks_obj = self.fetch_data(f"{self.album_url}{album_id}/tracks")
         if tracks_obj is None:
             return None
         try:
             tracks_data = tracks_obj["data"]
         except KeyError:
-            self._log.debug("Error fetching album tracks for {}", deezer_id)
+            self._log.debug("Error fetching album tracks for {}", album_id)
             tracks_data = None
         if not tracks_data:
             return None
@@ -130,8 +127,8 @@ class DeezerPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
 
         return AlbumInfo(
             album=album_data["title"],
-            album_id=deezer_id,
-            deezer_album_id=deezer_id,
+            album_id=album_id,
+            deezer_album_id=album_id,
             artist=artist,
             artist_credit=self.get_artist([album_data["artist"]])[0],
             artist_id=artist_id,
@@ -159,11 +156,7 @@ class DeezerPlugin(SearchApiMetadataSourcePlugin[IDResponse]):
             ``track_id`` or ``track_data`` must be provided.
 
         """
-        if not (deezer_id := self._extract_id(track_id)):
-            self._log.debug("Invalid Deezer track_id: {}", track_id)
-            return None
-
-        if not (track_data := self.fetch_data(f"{self.track_url}{deezer_id}")):
+        if not (track_data := self.fetch_data(f"{self.track_url}{track_id}")):
             self._log.debug("Track not found: {}", track_id)
             return None
 

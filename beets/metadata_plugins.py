@@ -17,7 +17,6 @@ from confuse import NotFoundError
 from typing_extensions import NotRequired
 
 from beets.util import cached_classproperty
-from beets.util.id_extractors import extract_release_id
 
 from .plugins import BeetsPlugin, find_plugins, notify_info_yielded, send
 
@@ -208,14 +207,6 @@ class MetadataSourcePlugin(BeetsPlugin, metaclass=abc.ABCMeta):
         """
 
         return filter(None, (self.track_for_id(id) for id in ids))
-
-    def _extract_id(self, url: str) -> str | None:
-        """Extract an ID from a URL for this metadata source plugin.
-
-        Uses the plugin's data source name to determine the ID format and
-        extracts the ID from a given URL.
-        """
-        return extract_release_id(self.data_source, url)
 
     @staticmethod
     def get_artist(

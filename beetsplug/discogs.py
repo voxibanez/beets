@@ -247,12 +247,10 @@ class DiscogsPlugin(MetadataSourcePlugin):
         """
         self._log.debug("Searching for release {}", album_id)
 
-        discogs_id = self._extract_id(album_id)
-
-        if not discogs_id:
+        if not album_id:
             return None
 
-        result = Release(self.discogs_client, {"id": discogs_id})
+        result = Release(self.discogs_client, {"id": album_id})
         # Try to obtain title to verify that we indeed have a valid Release
         try:
             getattr(result, "title")
@@ -428,7 +426,7 @@ class DiscogsPlugin(MetadataSourcePlugin):
         else:
             genre = base_genre
 
-        discogs_albumid = self._extract_id(result.data.get("uri"))
+        discogs_albumid = str(result.id)
 
         # Extract information for the optional AlbumInfo fields that are
         # contained on nested discogs fields.
