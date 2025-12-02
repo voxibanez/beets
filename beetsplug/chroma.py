@@ -36,6 +36,7 @@ TRACK_ID_WEIGHT = 10.0
 COMMON_REL_THRESH = 0.6  # How many tracks must have an album in common?
 MAX_RECORDINGS = 5
 MAX_RELEASES = 5
+PERFECT_SCORE_THRESH = 0.98
 
 # Stores the Acoustid match information for each track. This is
 # populated when an import task begins and then used when searching for
@@ -194,12 +195,12 @@ class AcoustidPlugin(MetadataSourcePlugin):
         self, items,
     ) -> AlbumInfo | None:
         """Return an AlbumInfo if all items point to the same release via
-        perfect (score=1.0) Acoustid matches. Otherwise, return None.
+        perfect (score=PERFECT_SCORE_THRESH) Acoustid matches. Otherwise, return None.
 
         This is used for the special 'no album metadata' path that only
         accepts 100%-score chroma matches.
         """
-        # Collect release IDs per item for which score is exactly 1.0.
+        # Collect release IDs per item for which score is exactly PERFECT_SCORE_THRESH.
         per_item_release_sets = []
 
         for item in items:
@@ -209,7 +210,7 @@ class AcoustidPlugin(MetadataSourcePlugin):
             self._log.debug("  scores: {}", _scores)
             if path not in _matches or path not in _scores:
                 return None
-            if _scores[path] < 1.0:
+            if _scores[path] < PERFECT_SCORE_THRESH:
                 # Not a perfect match for this item.
                 return None
 
@@ -249,7 +250,7 @@ class AcoustidPlugin(MetadataSourcePlugin):
         path = item.path
         if path not in _matches or path not in _scores:
             return []
-        if _scores[path] < 1.0:
+        if _scores[path] < PERFECT_SCORE_THRESH:
             # Not a perfect match according to Acoustid
             return []
 
