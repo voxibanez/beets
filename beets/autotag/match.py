@@ -378,15 +378,24 @@ def tag_item(
     # before normal metadata-based search. If we get a perfect match,
     # use it and skip the normal search.
     # ------------------------------------------------------------------
+    log.info(
+                    "Checking for basic metadata for {}",
+                    item,
+                )
     if not _has_basic_metadata(item):
-        acoustid_plugin = plugins.find_plugin("acoustid")
-        if (
-            acoustid_plugin is not None
-            and hasattr(acoustid_plugin, "perfect_item_candidates")
-        ):
+            log.info(
+                    "No basic metadata for {}",
+                    item,
+                )
+        acoustid_plugin = plugins.find_plugin("chroma")
+        if acoustid_plugin:
+            log.info(
+                    "Chroma plugin loaded {}",
+                    item,
+                )
             chroma_tracks = list(acoustid_plugin.perfect_item_candidates(item))
             if chroma_tracks:
-                log.debug(
+                log.info(
                     "chroma: using 100% Acoustid match for {}",
                     item,
                 )
@@ -430,4 +439,4 @@ def _has_basic_metadata(item):
 
     We consider title, artist, or album presence as 'having metadata'.
     """
-    return bool(item.title or item.artist or item.album)
+    return item.title and item.artist and item.album
