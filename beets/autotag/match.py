@@ -27,6 +27,7 @@ import numpy as np
 from beets import config, logging, metadata_plugins, plugins
 from beets.autotag import AlbumInfo, AlbumMatch, TrackInfo, TrackMatch, hooks
 from beets.util import get_most_common_tags
+from beets import plugins
 
 from .distance import VA_ARTISTS, distance, track_distance
 
@@ -371,6 +372,41 @@ def tag_item(
         else:
             return Proposal([], Recommendation.none)
 
+    # ------------------------------------------------------------------
+    # Special chroma-first path: if the item has no basic metadata and
+    # acoustid/chroma is enabled, try a 100%-score Acoustid match
+    # before normal metadata-based search. If we get a perfect match,
+    # use it and skip the normal search.
+    # ------------------------------------------------------------------
+    if not _has_basic_metadata(item):
+        acoustid_plugin = plugins.find_plugin("acoustid")
+        if (
+            acoustid_plugin is not None
+            and hasattr(acoustid_plugin, "perfect_item_candidates")
+        ):
+            chroma_tracks = list(acoustid_plugin.perfect_item_candidates(item))
+            if chroma_tracks:
+                log.debug(
+                    "chroma: using 100% Acoustid match for {}",
+                    item,
+                )
+                # Build candidates only from these TrackInfo objects.
+                candidates = {}
+                for track_info in chroma_tracks:
+                    # For the chroma‑only, 100% AcoustID case, we treat the
+                    # match as perfect (distance 0) and do NOT penalize for
+                    # changing tags from empty → something.
+                    dist = distance.Distance()
+                    candidates[track_info.track_id] = hooks.TrackMatch(
+                        dist, track_info
+                    )
+
+                candidates_sorted = _sort_candidates(candidates.values())
+                # With a zero distance, _recommendation will produce a
+                # strong recommendation.
+                rec = _recommendation(candidates_sorted)
+                return Proposal(candidates_sorted, rec)
+
     # Search terms.
     search_artist = search_artist or item.artist
     search_title = search_title or item.title
@@ -388,3 +424,10 @@ def tag_item(
     candidates_sorted = _sort_candidates(candidates.values())
     rec = _recommendation(candidates_sorted)
     return Proposal(candidates_sorted, rec)
+
+def _has_basic_metadata(item):
+    """Return True if the item has minimal identifying metadata.
+
+    We consider title, artist, or album presence as 'having metadata'.
+    """
+    return bool(item.title or item.artist or item.album)

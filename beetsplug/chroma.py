@@ -50,6 +50,8 @@ _matches = {}
 _fingerprints = {}
 _acoustids = {}
 
+# Stores the Acoustid score for each track's best result.
+_scores = {}
 
 def prefix(it, count):
     """Truncate an iterable to at most `count` items."""
@@ -119,6 +121,7 @@ def acoustid_match(log, path):
         log.debug("no results above threshold")
         return None
     _acoustids[path] = result["id"]
+    _scores[path] = result["score"]
 
     # Get recording and releases from the result
     if not result.get("recordings"):
@@ -186,6 +189,31 @@ class AcoustidPlugin(MetadataSourcePlugin):
         if self.config["auto"]:
             self.register_listener("import_task_start", self.fingerprint_task)
         self.register_listener("import_task_apply", apply_acoustid_metadata)
+
+    def perfect_item_candidates(self, item) -> Iterable[TrackInfo]:
+        """Return item candidates for this item if the Acoustid score
+        is a perfect 1.0. Otherwise, return an empty list.
+
+        This is used by the matcher in the special 'no metadata' case.
+        """
+        path = item.path
+        if path not in _matches or path not in _scores:
+            return []
+        if _scores[path] < 1.0:
+            # Not a perfect match according to Acoustid
+            return []
+
+        recording_ids, _ = _matches[path]
+        tracks = []
+        for recording_id in prefix(recording_ids, MAX_RECORDINGS):
+            track = self.mb.track_for_id(recording_id)
+            if track:
+                tracks.append(track)
+        self._log.debug(
+            "acoustid perfect item candidates (score=1.0): {}",
+            len(tracks),
+        )
+        return tracks
 
     @cached_property
     def mb(self) -> MusicBrainzPlugin:
