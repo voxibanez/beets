@@ -180,10 +180,14 @@ class BadFiles(BeetsPlugin):
                 for error_line in error:
                     ui.print_(error_line)
 
+            return importer.Action.SKIP
+
             ui.print_()
             ui.print_("What would you like to do?")
 
             sel = ui.input_options(["aBort", "skip", "continue"])
+
+
 
             if sel == "s":
                 return importer.Action.SKIP

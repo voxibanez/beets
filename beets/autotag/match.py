@@ -287,20 +287,13 @@ def tag_album(
         # (score=1.0) Acoustid matches for all items. If found, treat it as
         # distance 0 and skip the normal search.
         # ------------------------------------------------------------------
-        log.debug("Checking if album has no metadata")
         if not _album_has_basic_metadata(items):
-            log.debug("Album has no metadata")
             acoustid_plugins = [p for p in plugins.find_plugins() if p.name == "chroma"]
             if acoustid_plugins:
-                log.debug("Have plugin!")
+                log.info("Album has no metadata, trying acousticid")
                 acoustid_plugin = acoustid_plugins[0]
                 perfect_album = acoustid_plugin.perfect_album_candidate(items)
                 if perfect_album is not None:
-                    log.debug(
-                        "chroma: using 100% Acoustid album match {} for {} items",
-                        perfect_album.album_id,
-                        len(items),
-                    )
                     # Build the mapping using assign_items, but then force
                     # the overall distance to zero so that there is no
                     # penalty for changing tags from empty → real metadata.
@@ -424,28 +417,13 @@ def tag_item(
     # before normal metadata-based search. If we get a perfect match,
     # use it and skip the normal search.
     # ------------------------------------------------------------------
-    log.info(
-                    "Checking for basic metadata for {}",
-                    item,
-                )
     if not _has_basic_metadata(item):
-        log.info(
-                    "No basic metadata for {}",
-                    item,
-                )
         acoustid_plugins = [p for p in plugins.find_plugins() if p.name == "chroma"]
         if acoustid_plugins:
             acoustid_plugin = acoustid_plugins[0]
-            log.info(
-                    "Chroma plugin loaded {}",
-                    item,
-                )
             chroma_tracks = list(acoustid_plugin.perfect_item_candidates(item))
             if chroma_tracks:
-                log.info(
-                    "chroma: using 100% Acoustid match for {}",
-                    item,
-                )
+                log.info("Album has no metadata, trying acousticid")
                 # Build candidates only from these TrackInfo objects.
                 candidates = {}
                 for track_info in chroma_tracks:
