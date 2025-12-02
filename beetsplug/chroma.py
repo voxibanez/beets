@@ -26,7 +26,7 @@ import confuse
 
 from beets import config, ui, util
 from beets.autotag.distance import Distance
-from beets.autotag.hooks import TrackInfo
+from beets.autotag.hooks import TrackInfo, AlbumInfo
 from beets.metadata_plugins import MetadataSourcePlugin
 from beetsplug.musicbrainz import MusicBrainzPlugin
 
