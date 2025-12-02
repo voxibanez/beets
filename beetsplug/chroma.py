@@ -204,9 +204,9 @@ class AcoustidPlugin(MetadataSourcePlugin):
 
         for item in items:
             path = item.path
-            log.debug("checking {} for perfect album match", path)
-            log.debug("  matches: {}", _matches)
-            log.debug("  scores: {}", _scores)
+            self._log.debug("checking {} for perfect album match", path)
+            self._log.debug("  matches: {}", _matches)
+            self._log.debug("  scores: {}", _scores)
             if path not in _matches or path not in _scores:
                 return None
             if _scores[path] < 1.0:
