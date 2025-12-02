@@ -287,9 +287,12 @@ def tag_album(
         # (score=1.0) Acoustid matches for all items. If found, treat it as
         # distance 0 and skip the normal search.
         # ------------------------------------------------------------------
+        log.debug("Checking if album has no metadata")
         if not _album_has_basic_metadata(items):
+            log.debug("Album has no metadata")
             acoustid_plugins = [p for p in plugins.find_plugins() if p.name == "chroma"]
             if acoustid_plugins:
+                log.debug("Have plugin!")
                 acoustid_plugin = acoustid_plugins[0]
                 perfect_album = acoustid_plugin.perfect_album_candidate(items)
                 if perfect_album is not None:
