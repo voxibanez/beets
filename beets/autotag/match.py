@@ -288,7 +288,7 @@ def tag_album(
         # distance 0 and skip the normal search.
         # ------------------------------------------------------------------
         if not _album_has_basic_metadata(items):
-            acoustid_plugins = [p if p.name == "chroma" for p in plugins.find_plugins()]
+            acoustid_plugins = [p for p in plugins.find_plugins() if p.name == "chroma"]
             if acoustid_plugins:
                 acoustid_plugin = acoustid_plugins[0]
                 perfect_album = acoustid_plugin.perfect_album_candidate(items)
@@ -430,7 +430,7 @@ def tag_item(
                     "No basic metadata for {}",
                     item,
                 )
-        acoustid_plugins = [p if p.name == "chroma" for p in plugins.find_plugins()]
+        acoustid_plugins = [p for p in plugins.find_plugins() if p.name == "chroma"]
         if acoustid_plugins:
             acoustid_plugin = acoustid_plugins[0]
             log.info(
