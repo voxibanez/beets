@@ -383,7 +383,7 @@ def tag_item(
                     item,
                 )
     if not _has_basic_metadata(item):
-            log.info(
+        log.info(
                     "No basic metadata for {}",
                     item,
                 )
