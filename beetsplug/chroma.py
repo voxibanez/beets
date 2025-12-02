@@ -24,7 +24,7 @@ from functools import cached_property, partial
 import acoustid
 import confuse
 
-from beets import config, ui, util, logging
+from beets import config, ui, util
 from beets.autotag.distance import Distance
 from beets.autotag.hooks import TrackInfo, AlbumInfo
 from beets.metadata_plugins import MetadataSourcePlugin
@@ -204,9 +204,9 @@ class AcoustidPlugin(MetadataSourcePlugin):
 
         for item in items:
             path = item.path
-            logging.debug("checking {} for perfect album match", path)
-            logging.debug("  matches: {}", _matches)
-            logging.debug("  scores: {}", _scores)
+            log.debug("checking {} for perfect album match", path)
+            log.debug("  matches: {}", _matches)
+            log.debug("  scores: {}", _scores)
             if path not in _matches or path not in _scores:
                 return None
             if _scores[path] < 1.0:
