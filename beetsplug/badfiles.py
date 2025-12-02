@@ -161,14 +161,17 @@ class BadFiles(BeetsPlugin):
             return
 
         checks_failed = []
+        tracks_failed = []
 
         for item in task.items:
             error_lines = self.check_item(item)
             if error_lines:
                 checks_failed.append(error_lines)
+                tracks_failed.append(item.path)
 
         if checks_failed:
             task._badfiles_checks_failed = checks_failed
+            task._badfiles_tracks_failed = tracks_failed
 
     def on_import_task_before_choice(self, task, session):
         if hasattr(task, "_badfiles_checks_failed"):
@@ -179,6 +182,9 @@ class BadFiles(BeetsPlugin):
             for error in task._badfiles_checks_failed:
                 for error_line in error:
                     ui.print_(error_line)
+
+            for track_path in task._badfiles_tracks_failed:
+                session.logger.info("Bad file detected: {}", track_path)
 
             return importer.Action.SKIP
 
