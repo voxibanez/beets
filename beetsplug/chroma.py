@@ -190,6 +190,53 @@ class AcoustidPlugin(MetadataSourcePlugin):
             self.register_listener("import_task_start", self.fingerprint_task)
         self.register_listener("import_task_apply", apply_acoustid_metadata)
 
+    def perfect_album_candidate(
+        self, items,
+    ) -> AlbumInfo | None:
+        """Return an AlbumInfo if all items point to the same release via
+        perfect (score=1.0) Acoustid matches. Otherwise, return None.
+
+        This is used for the special 'no album metadata' path that only
+        accepts 100%-score chroma matches.
+        """
+        # Collect release IDs per item for which score is exactly 1.0.
+        per_item_release_sets = []
+
+        for item in items:
+            path = item.path
+            if path not in _matches or path not in _scores:
+                return None
+            if _scores[path] < 1.0:
+                # Not a perfect match for this item.
+                return None
+
+            _recording_ids, release_ids = _matches[path]
+            if not release_ids:
+                return None
+
+            per_item_release_sets.append(set(release_ids))
+
+        if not per_item_release_sets:
+            return None
+
+        # Intersect all release sets to find releases shared by all tracks.
+        common_releases = set.intersection(*per_item_release_sets)
+        if not common_releases:
+            return None
+
+        # Pick one common release (e.g. the first) and fetch its AlbumInfo.
+        relid = next(iter(common_releases))
+        album = self.mb.album_for_id(relid)
+        if not album:
+            return None
+
+        self._log.debug(
+            "acoustid perfect album candidate for {} items: {}",
+            len(items),
+            relid,
+        )
+        return album
+
     def perfect_item_candidates(self, item) -> Iterable[TrackInfo]:
         """Return item candidates for this item if the Acoustid score
         is a perfect 1.0. Otherwise, return an empty list.

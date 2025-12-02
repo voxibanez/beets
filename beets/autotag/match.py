@@ -269,6 +269,7 @@ def tag_album(
     # The output result, keys are the MB album ID.
     candidates: dict[Any, AlbumMatch] = {}
 
+    
     # Search by explicit ID.
     if search_ids:
         for search_id in search_ids:
@@ -280,6 +281,50 @@ def tag_album(
 
     # Use existing metadata or text search.
     else:
+        # ------------------------------------------------------------------
+        # Special chroma-first path: if the album has no basic metadata and
+        # acoustid/chroma is enabled, try to find a single album via perfect
+        # (score=1.0) Acoustid matches for all items. If found, treat it as
+        # distance 0 and skip the normal search.
+        # ------------------------------------------------------------------
+        if not _album_has_basic_metadata(items):
+            acoustid_plugin = plugins.find_plugin("acoustid")
+            if (
+                acoustid_plugin is not None
+                and hasattr(acoustid_plugin, "perfect_album_candidate")
+            ):
+                perfect_album = acoustid_plugin.perfect_album_candidate(items)
+                if perfect_album is not None:
+                    log.debug(
+                        "chroma: using 100% Acoustid album match {} for {} items",
+                        perfect_album.album_id,
+                        len(items),
+                    )
+                    # Build the mapping using assign_items, but then force
+                    # the overall distance to zero so that there is no
+                    # penalty for changing tags from empty → real metadata.
+                    mapping, extra_items, extra_tracks = assign_items(
+                        items, perfect_album.tracks
+                    )
+
+                    from beets.autotag.distance import Distance
+
+                    dist = Distance()  # treat as perfect
+
+                    match = hooks.AlbumMatch(
+                        dist,
+                        perfect_album,
+                        mapping,
+                        extra_items,
+                        extra_tracks,
+                    )
+
+                    # Only this candidate, strong recommendation.
+                    candidates_sorted = [match]
+                    rec = Recommendation.strong
+                    plugins.send("album_matched", match=match)
+                    return cur_artist, cur_album, Proposal(candidates_sorted, rec)
+
         # Try search based on current ID.
         if info := match_by_id(items):
             _add_candidate(items, candidates, info)
@@ -440,3 +485,11 @@ def _has_basic_metadata(item):
     We consider title, artist, or album presence as 'having metadata'.
     """
     return item.title and item.artist and item.album
+
+def _album_has_basic_metadata(items) -> bool:
+    """Return True if the album (items) has any basic identifying metadata.
+
+    If *any* item has title/artist/album, we consider the album to have
+    metadata.
+    """
+    return any(_has_basic_metadata(i) for i in items)
