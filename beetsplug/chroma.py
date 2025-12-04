@@ -91,7 +91,7 @@ def acoustid_match(log, path):
     """
     try:
         duration, fp = acoustid.fingerprint_file(util.syspath(path))
-    except acoustid.FingerprintGenerationError as exc:
+    except Exception as exc:
         log.error(
             "fingerprinting of {} failed: {}",
             util.displayable_path(repr(path)),
@@ -371,7 +371,7 @@ def submit_items(log, userkey, items, chunksize=64):
         log.info("submitting {} fingerprints", len(data))
         try:
             acoustid.submit(API_KEY, userkey, data, timeout=10)
-        except acoustid.AcoustidError as exc:
+        except Exception as exc:
             log.warning("acoustid submission error: {}", exc)
         del data[:]
 
