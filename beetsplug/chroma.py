@@ -104,7 +104,7 @@ def acoustid_match(log, path):
         res = acoustid.lookup(
             API_KEY, fp, duration, meta="recordings releases", timeout=10
         )
-    except acoustid.AcoustidError as exc:
+    except Exception as exc:
         log.debug(
             "fingerprint matching {} failed: {}",
             util.displayable_path(repr(path)),
@@ -437,5 +437,5 @@ def fingerprint_item(log, item, write=False):
             if item._db:
                 item.store()
             return item.acoustid_fingerprint
-        except acoustid.FingerprintGenerationError as exc:
+        except Exception as exc:
             log.info("fingerprint generation failed: {}", exc)
